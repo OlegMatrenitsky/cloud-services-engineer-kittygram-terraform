@@ -1,0 +1,49 @@
+services:
+  postgres:
+    image: postgres:13.10
+    container_name: postgres
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - /home/practicum/kittygram/db_data:/var/lib/postgresql/data
+
+  backend:
+    image: omatrenitsky/kittygram_backend:latest
+    container_name: backend
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+    volumes:
+      - /home/practicum/kittygram/static:/backend_static/
+      - /home/practicum/kittygram/media:/app/media/
+
+  frontend:
+    image: omatrenitsky/kittygram_frontend:latest
+    container_name: frontend
+    env_file:
+      - .env
+    command: cp -r /app/build/. /static_frontend/
+    volumes:
+      - /home/practicum/kittygram/static:/static_frontend/
+
+
+  gateway:
+    image: omatrenitsky/kittygram_gateway:latest
+    container_name: gateway
+    env_file:
+      - .env
+    depends_on:
+      - frontend
+      - backend
+    volumes:
+      - /home/practicum/kittygram/static:/staticfiles/
+      - /home/practicum/kittygram/media:/media/
+    ports:
+      - 80:80
+
+volumes:
+  db_data:
+  static:
+  media:
